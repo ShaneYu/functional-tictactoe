@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TicTacToe
 {
@@ -84,24 +86,26 @@ namespace TicTacToe
 
         public static char? CheckForWinner(char[,] board)
         {
-            char? result;
+            List<char?> conditions = new List<char?>
+            {
+                // Check Rows
+                IsThreeInARow(board, 0, 0, 0, 1),
+                // Check Columns
+                IsThreeInARow(board, 0, 0, 1, 0),
+                // Check Diagonal TL -> BR
+                IsThreeInARow(board, 0, 0, 1, 1),
+                // Check Diagonal TR -> BL
+                IsThreeInARow(board, 2, 0, -1, 1),
+                IsBoardFull(board)
+            };
 
-            // Check Rows
-            result = IsThreeInARow(board, 0, 0, 0, 1);
-            if (result.HasValue) return result.Value;
+            char? result = conditions.SingleOrDefault(c => c.HasValue);
 
-            // Check Columns
-            result = IsThreeInARow(board, 0, 0, 1, 0);
-            if (result.HasValue) return result.Value;
+            return result;
+        }
 
-            // Check Diagonal TL -> BR
-            result = IsThreeInARow(board, 0, 0, 1, 1);
-            if (result.HasValue) return result.Value;
-
-            // Check Diagonal TR -> BL
-            result = IsThreeInARow(board, 2, 0, -1, 1);
-            if (result.HasValue) return result.Value;
-
+        public static char? IsBoardFull(char[,] board)
+        {
             int spacesFilled = 0;
             for (int y = 0; y < board.GetLength(0); y++)
             {
@@ -114,12 +118,7 @@ namespace TicTacToe
                 }
             }
 
-            if (spacesFilled == 9)
-            {
-                return '-';
-            }
-
-            return null;
+            return spacesFilled == 9 ? '-' : (char?)null;
         }
 
         public static char? IsThreeInARow(char[,] board, int startX, int startY, int dX, int dY)
@@ -138,7 +137,7 @@ namespace TicTacToe
         public static void AnnounceWinner(Action<string> write, char[,] board, char winner, Action clear = null)
         {
             clear?.Invoke();
-            
+
             Print(write, board, null, clear);
             write($"\nWinner is: {(winner == '-' ? "No one" : $"Player {(winner == 'X' ? 1 : 2)}")}.");
         }
